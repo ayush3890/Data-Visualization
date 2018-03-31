@@ -1,0 +1,68 @@
+@import url('https://fonts.googleapis.com/css?family=Roboto');
+
+body {
+    background-color: #e3fcff;
+}
+
+svg {
+    transform: scale(0.9);
+
+}
+
+.tooltip {
+    opacity:0;
+    position: absolute;
+    pointer-events: none;
+    background-color:#fff;
+    border:5px solid #122500;
+    color: #122500;
+    border-radius: 5px;
+    width:300px;
+    font-size:12px;
+    letter-spacing: 2.5px;
+    padding:20px;
+    font-family: Bahnschrift;
+}
+
+circle {
+}
+
+.tooltip:before {
+    content: ' ';
+    position: absolute;
+    border: 12px solid transparent;
+    border-bottom-color: #122500;
+    top: -26px;
+    left: 50%;
+    margin-left: 6px;
+}
+
+.tick line {
+    stroke: #ccc;
+    stroke-dasharray: 10,5;
+}
+
+.tick text {
+    font-size: 1em;
+}
+
+path {
+}
+
+.article {
+    padding:10px;
+    width:800px;
+    text-align: center;
+    font-family:Roboto;
+    margin:10px auto;
+    border-radius: 8px;
+    color: #ffdad6;
+}
+
+.article p{
+    margin:0;
+}
+
+.article #topic {
+    font-weight: 900;
+}
