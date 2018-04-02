@@ -1,38 +1,43 @@
-var m = [];
-for(var i = 0; i < array.length; i++) {
-    var temp = array[i].country;
-    var b = contains(temp);
-    var obj = {};
-    if (b === null) {
-        obj = {
-                    name : array[i].country,
-                    count:1,
-                    art:[]
-                };
-        obj.art.push(array[i]);
-        m.push(obj);
-    } else {
-        var index = m.indexOf(b);
-        m.splice(index, 1);
-        obj.name = b.name;
-        obj.count = b.count + 1;
-        obj.art = b.art;
-        obj.art.push(array[i]);
-        m.push(obj);
-    }
-
-}
-function contains(t) {
-    for(var i = 0; i < m.length; i++) {
-        if(m[i].name === t) {
-            return m[i];
+var fmap = [];
+function createFMap(array) {
+    var m = [];
+    for (var i = 0; i < array.length; i++) {
+        var temp = array[i].country;
+        var b = contains(temp);
+        var obj = {};
+        if (b === null) {
+            obj = {
+                name: array[i].country,
+                count: 1,
+                art: []
+            };
+            obj.art.push(array[i]);
+            m.push(obj);
+        } else {
+            var index = m.indexOf(b);
+            m.splice(index, 1);
+            obj.name = b.name;
+            obj.count = b.count + 1;
+            obj.art = b.art;
+            obj.art.push(array[i]);
+            m.push(obj);
         }
+
     }
 
-    return null;
-}
+    function contains(t) {
+        for (var i = 0; i < m.length; i++) {
+            if (m[i].name === t) {
+                return m[i];
+            }
+        }
 
-var fmap = m;
+        return null;
+    }
+
+
+    fmap = m;
+};
 
 var width = 500;
 var height = 500;
@@ -73,6 +78,7 @@ var yAxis = d3.axisLeft(yScale)
 updateScatterPlot(array);
 
 function updateScatterPlot(data) {
+    d3.selectAll("#sp > *").remove();
     d3.select('#sp')
         .append('g')
         .attr('transform', 'translate(0,' + (height - padding)+ ')')
@@ -138,121 +144,130 @@ function updateScatterPlot(data) {
         .text('Intensity');
 }
 
-
-
-d3.queue()
-    .defer(d3.json, '//unpkg.com/world-atlas@1.1.4/world/50m.json')
-    .defer(d3.csv, './country_data.csv', function(row) {
-        var c = fmap.filter(function( obj ) {
-            if(obj.name === row.country) {
-                return obj;
+updateMap(array);
+function updateMap(array) {
+    createFMap(array);
+    d3.queue()
+        .defer(d3.json, '//unpkg.com/world-atlas@1.1.4/world/50m.json')
+        .defer(d3.csv, './country_data.csv', function (row) {
+            var c = fmap.filter(function (obj) {
+                if (obj.name === row.country) {
+                    return obj;
+                }
+            });
+            if (c.length === 0) {
+                var obj = {};
+                obj.name = row.country;
+                obj.count = 0;
+                c = obj;
+            } else {
+                c = c[0];
             }
-        });
-        if(c.length === 0) {
-            var obj = {};
-            obj.name = row.country;
-            obj.count = 0;
-            c = obj;
-        } else {
-            c = c[0];
-        }
-        return {
-            country: row.country,
-            countryCode: row.countryCode,
-            population: +row.population,
-            count: c.count,
-            articles: c.art
-        }
-    })
-    .await(function(error, mapData, populationData) {
-        if (error) throw error;
+            return {
+                country: row.country,
+                countryCode: row.countryCode,
+                population: +row.population,
+                count: c.count,
+                articles: c.art
+            }
+        })
+        .await(function (error, mapData, populationData) {
+            if (error) throw error;
 
-        var geoData = topojson.feature(mapData, mapData.objects.countries).features;
-        populationData.forEach(row => {
-            var countries = geoData.filter(d => d.id === row.countryCode);
-            countries.forEach(country => country.properties = row);
-        });
+            var geoData = topojson.feature(mapData, mapData.objects.countries).features;
+            populationData.forEach(row => {
+                var countries = geoData.filter(d => d.id === row.countryCode);
+                countries.forEach(country => country.properties = row);
+            });
 
-        var width = 800;
-        var height = 600;
+            var width = 800;
+            var height = 600;
 
-        var projection = d3.geoMercator()
-                        .scale(125)
-                        .translate([width/2, height/1.4]);
+            var projection = d3.geoMercator()
+                .scale(125)
+                .translate([width / 2, height / 1.4]);
 
-        var path = d3.geoPath()
-                    .projection(projection);
+            var path = d3.geoPath()
+                .projection(projection);
 
-        d3.select("#map")
-            .attr("width", width)
-            .attr("height", height)
-            .selectAll(".country")
-            .data(geoData)
-            .enter()
-            .append("path")
-            .classed("country", true)
-            .attr("d", path);
+            d3.select("#map")
+                .attr("width", width)
+                .attr("height", height)
+                .selectAll(".country")
+                .data(geoData)
+                .enter()
+                .append("path")
+                .classed("country", true)
+                .attr("d", path);
 
-        setColor();
+            setColor();
 
-        function setColor() {
-            var scale = d3.scaleLinear()
-                .domain([0, 112])
-                .range(["yellow", "green"]);
+            function setColor() {
+                var scale = d3.scaleLinear()
+                    .domain([0, d3.max(fmap, d => {
+                        if (d.name !== "")
+                            return d.count
+                    })])
+                    .range(["yellow", "green"]);
 
-            d3.selectAll(".country")
-                .transition()
-                .duration(750)
-                .ease(d3.easeBackIn)
-                .attr("fill", d => {
-                    var data = d.properties.count;
-                    return data ? scale(data) : "#ccc";
-                });
+                d3.selectAll(".country")
+                    .transition()
+                    .duration(750)
+                    .ease(d3.easeBackIn)
+                    .attr("fill", d => {
+                        var data = d.properties.count;
+                        return data ? scale(data) : "#ccc";
+                    });
 
-            d3.selectAll("#map")
-                .on("mousemove", updateTooltip)
-                .on('mouseout', function() {
-                    tooltip
-                        .style('opacity', 0);
-                })
-                .on('click', updateData);
+                d3.selectAll("#map")
+                    .on("mousemove", updateTooltip)
+                    .on('mouseout', function () {
+                        tooltip
+                            .style('opacity', 0);
+                    })
+                    .on('click', updateData);
 
-            function updateTooltip() {
-                var tooltip = d3.select(".tooltip");
-                var tgt = d3.select(d3.event.target);
-                if(tgt._groups[0][0].__data__) {
-                    // console.log(tgt._groups[0][0].__data__.properties);
-                    tooltip
-                        .style('opacity', 1)
-                        .style("left", (d3.event.pageX + - 5 - tooltip.node().offsetWidth / 2) + "px")
-                        .style("top", (d3.event.pageY + 100 - tooltip.node().offsetHeight - 10) + "px")
-                        .html(function() {
-                            var string = '<p>Country: ' + tgt._groups[0][0].__data__.properties.country + '</p>';
-                            if (tgt._groups[0][0].__data__.properties.articles)
-                                string += '<p>Total Number of articles:' + tgt._groups[0][0].__data__.properties.count + '</p>';
-                        return string;
-                })
+                function updateTooltip() {
+                    var tooltip = d3.select(".tooltip");
+                    var tgt = d3.select(d3.event.target);
+                    if (tgt._groups[0][0].__data__) {
+                        // console.log(tgt._groups[0][0].__data__.properties);
+                        tooltip
+                            .style('opacity', 1)
+                            .style("left", (d3.event.pageX + -5 - tooltip.node().offsetWidth / 2) + "px")
+                            .style("top", (d3.event.pageY + 100 - tooltip.node().offsetHeight - 10) + "px")
+                            .html(function () {
+                                var string = '<p>Country: ' + tgt._groups[0][0].__data__.properties.country + '</p>';
+                                if (tgt._groups[0][0].__data__.properties.articles)
+                                    string += '<p>Total Number of articles:' + tgt._groups[0][0].__data__.properties.count + '</p>';
+                                return string;
+                            })
+                    }
+
                 }
 
-            }
-
-            function updateData() {
-                var tgt = d3.select(d3.event.target);
-                d3.selectAll("#sp > *").remove();
-                if(tgt._groups[0][0].__data__) {
-                    if(tgt._groups[0][0].__data__.properties.articles)
-                        updateScatterPlot(tgt._groups[0][0].__data__.properties.articles);
-                    updateShowPage(tgt._groups[0][0].__data__.properties.articles);
-                } else {
-                    updateScatterPlot(array);
+                function updateData() {
+                    var tgt = d3.select(d3.event.target);
+                    d3.selectAll("#sp > *").remove();
+                    if (tgt._groups[0][0].__data__) {
+                        if (tgt._groups[0][0].__data__.properties.articles) {
+                            console.log(tgt._groups[0][0].__data__.properties.articles);
+                            updateScatterPlot(tgt._groups[0][0].__data__.properties.articles);
+                            updateShowPage(tgt._groups[0][0].__data__.properties.articles);
+                        } else {
+                            var kk = [];
+                            updateScatterPlot(kk);
+                            updateShowPage(kk);
+                        }
+                    } else {
+                        updateScatterPlot(array);
+                    }
                 }
             }
-        }
-    });
-
+        });
+}
 function updateShowPage(articles) {
     d3.selectAll("#showPage > *").remove();
-
     d3.select('#showPage')
         .attr('width', '1000px')
         .attr('height', '1000px')
@@ -271,13 +286,28 @@ function updateShowPage(articles) {
         .classed('article', true)
         .style('color', function(d) {
             return colorScale(d.likelihood) + '';
-        })
-        .on('mousemove', d => {
-            var tgt = d3.select(d3.event.target);
         });
 }
 
+var pestle = document.getElementById('pestle');
+pestle.addEventListener('change', function (e) {
+    var xx = pestle.value;
 
+    var arr = [];
+    array.forEach(function (ele) {
+        if(ele.pestle === xx) {
+            arr.push(ele);
+        }
+    });
+    updateScatterPlot(arr);
+    updateMap(arr);
+});
+
+var resetBtn = document.querySelector('#resetBtn');
+resetBtn.addEventListener('click', function() {
+    updateScatterPlot(array);
+    updateMap(array);
+});
 
 
 

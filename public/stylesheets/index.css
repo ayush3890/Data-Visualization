@@ -2,10 +2,40 @@
 
 body {
     background-color: #e3fcff;
+    margin:0;
 }
 
 svg {
     transform: scale(0.9);
+}
+
+#header {
+    padding-top: 50px;
+    color: #ffffff;
+    background-color: #375A7F;
+    height:100px;
+    text-align: center;
+}
+
+#header h1 {
+    text-align: center;
+    margin:0;
+}
+
+#header button {
+    background-color: #fff;
+    color: #375A7F;
+    border:0;
+    outline-width: 0;
+    font-size: 20px;
+    border-radius: 5px;
+}
+
+#header select {
+    font-size: 20px;
+    outline-width: 0;
+    border-radius: 5px;
+    color: #375A7F;
 
 }
 
@@ -57,6 +87,7 @@ path {
     margin:10px auto;
     border-radius: 8px;
     color: #ffdad6;
+    transition: 1s delay linear;
 }
 
 .article p{

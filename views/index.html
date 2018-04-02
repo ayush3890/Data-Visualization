@@ -5,17 +5,29 @@
     <link rel="stylesheet" href="../public/stylesheets/index.css">
 </head>
 <body>
+
+    <div id="header">
+        <h1>Virtual Assistant</h1>
+        <select id="pestle">
+            <option value="Industries">Industries</option>
+            <option value="Environmental">Environmental</option>
+            <option value="Economic">Economic</option>
+            <option value="Political">Political</option>
+            <option value="Technological">Technological</option>
+            <option value="Organization">Organization</option>
+            <option value="Healthcare">Healthcare</option>
+            <option value="Social">Social</option>
+            <option value="Lifestyles">Lifestyles</option>
+        </select>
+
+        <button id="resetBtn">Reset</button>
+    </div>
+
     <svg version="1.1" baseProfile="full" xmlns="http://www.w3.org/2000/svg" id="sp"></svg>
 
     <svg version="1.1" baseProfile="full" xmlns="http://www.w3.org/2000/svg" id="map"></svg>
 
     <div id="showPage">
-        <!--<div class="article">-->
-            <!--<p id="topic">Energy | Gas</p>-->
-            <!--<p>U.S. natural gas consumption is expected to increase during much of the projection period.</p>-->
-            <!--<p>Northern America | United States Of America</p>-->
-            <!--<a target="_blank" href="http://www.eia.gov/outlooks/aeo/pdf/0383(2017).pdf">Read More</a>-->
-        <!--</div>-->
     </div>
 
     <script src="//cdnjs.cloudflare.com/ajax/libs/topojson/1.6.9/topojson.min.js"></script>
